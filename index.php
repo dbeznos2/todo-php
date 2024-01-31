@@ -22,6 +22,11 @@ if (file_exists('output_json.json')) {
     $notes = json_decode(file_get_contents('output_json.json'), true);
 }
 
+$messerror = "";
+$messsuccess = "";
+$colorerror = "red";
+$colorsuccess = "green";
+
 if (isset($_POST["submitBtn"])) {
     $newNote = trim(htmlspecialchars($_POST["inputValue"]));
 
@@ -29,6 +34,13 @@ if (isset($_POST["submitBtn"])) {
         $notes[] = $newNote;
         file_put_contents('output_json.json', json_encode($notes));
     }
+
+    if (mb_strlen($newNote) < 3 || mb_strlen($newNote) > 100) {
+        $messerror = "Error: String length is smaller than 3 characters";
+    } else {
+        $messsuccess = "String length is valid";
+    }
+
 }
 if (isset($_POST["toot"],$_POST["index"])) {
     $notes[$_POST["index"]] = $_POST["toot"];
@@ -99,8 +111,18 @@ if (isset($_GET["SortTodo"])) {
     <title>Todo App</title>
 </head>
 <body>
-<h2>Add your todo</h2>
+<style>
+    .messerror {
+        color: red;
+    }
 
+    .messsuccess {
+        color: green;
+    }
+</style>
+<p class="messerror"><?php echo $messerror; ?></p>
+<p class="messsuccess"><?php echo $messsuccess; ?></p>
+<h2>Add your todo</h2>
 <form action="index.php" method="post">
     <label>
         <input type="text" name="inputValue">
@@ -128,7 +150,7 @@ if (isset($_GET["SortTodo"])) {
             </form>
             <form action="index.php" method="post">
                 <input hidden="hidden" type="submit" name="index" value="<?= $index ?>">
-                    <input type="text" name="toot" value="<?php echo $note; ?>">
+                <input type="text" name="toot" value="<?php echo $note; ?>">
             </form>
 
             <form action="index.php" method="post">
