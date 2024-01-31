@@ -78,6 +78,15 @@ if (isset($_POST["moveDown"])) {
     }
 }
 
+if (isset($_GET["SortTodo"])) {
+    if ($_GET["SortTodo"] == "alphabetic") {
+        natcasesort($notes);
+    }elseif ($_GET["SortTodo"] == "nonAlphabetic") {
+        natcasesort($notes);
+        $notes = array_reverse($notes);
+    }
+}
+
 ?>
 
 <!doctype html>
@@ -91,11 +100,21 @@ if (isset($_POST["moveDown"])) {
 </head>
 <body>
 <h2>Add your todo</h2>
+
 <form action="index.php" method="post">
     <label>
-        <input type="text" name="inputValue"><br><br>
+        <input type="text" name="inputValue">
     </label>
-    <button name="submitBtn" type="submit">Add</button>
+    <button name="submitBtn" type="submit">Add</button><br><br>
+</form>
+
+<form action="index.php" method="get">
+    <select name="SortTodo" >
+        <option value="unset">Unset</option>
+        <option value="alphabetic">Alphabetic</option>
+        <option value="nonAlphabetic">Non Alphabetic</option>
+    </select>
+    <input value="Submit" type="submit">
 </form>
 
 <h2>Your Todos:</h2>
