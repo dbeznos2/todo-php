@@ -7,45 +7,40 @@ function swap($array, $index, $index2) {
     $array[$index2] = $temp;
     return $array;
 }
-
-$dsn = "sqlite: damnDb.db";
+/*
+$dsn = "sqlite:damnDB.sqlite";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 $pdo = new PDO($dsn, null, null,  $options);
-
+*/
 
 $notes = [];
 if (file_exists('output_json.json')) {
     $notes = json_decode(file_get_contents('output_json.json'), true);
 }
 
-$messerror = "";
-$messsuccess = "";
-$colorerror = "red";
-$colorsuccess = "green";
-
 if (isset($_POST["submitBtn"])) {
     $newNote = trim(htmlspecialchars($_POST["inputValue"]));
 
-    if(!empty($newNote)) {
+    if (mb_strlen($newNote) < 3 || mb_strlen($newNote) > 100) {
+        $_SESSION["messerror"] = "Error: String length is smaller than 3 characters or greater than a 100 character";
+    } else {
+        $_SESSION["messuccess"] = "String length is valid";
+
         $notes[] = $newNote;
         file_put_contents('output_json.json', json_encode($notes));
     }
-
-    if (mb_strlen($newNote) < 3 || mb_strlen($newNote) > 100) {
-        $messerror = "Error: String length is smaller than 3 characters";
-    } else {
-        $messsuccess = "String length is valid";
-    }
-
+    header("Location: index.php");
+    die();
 }
 if (isset($_POST["toot"],$_POST["index"])) {
     $notes[$_POST["index"]] = $_POST["toot"];
     file_put_contents('output_json.json', json_encode($notes));
     header("Location: index.php");
+    die();
 }
 // is button clicked?
 if (isset($_POST["deleteBtn"])) {
@@ -60,7 +55,7 @@ if (isset($_POST["deleteBtn"])) {
     //refresh page
     header("Location: index.php");
     //stop execution
-    exit;
+    die();
 }
 if (isset($_POST['moveUP'])) {
     $index = $_POST["moveUP"];
@@ -73,6 +68,7 @@ if (isset($_POST['moveUP'])) {
 
         //refresh page
         header("Location: index.php");
+        die();
     }
 
 }
@@ -87,6 +83,7 @@ if (isset($_POST["moveDown"])) {
 
         //refresh page
         header("Location: index.php");
+        die();
     }
 }
 
@@ -96,6 +93,13 @@ if (isset($_GET["SortTodo"])) {
     }elseif ($_GET["SortTodo"] == "nonAlphabetic") {
         natcasesort($notes);
         $notes = array_reverse($notes);
+    }
+}
+
+function display_from_session($variable): void {
+    if (isset($_SESSION[$variable])) {
+        echo "<p class=$variable>" . htmlspecialchars($_SESSION[$variable]) . "</p>";
+        unset($_SESSION[$variable]);
     }
 }
 
@@ -115,14 +119,21 @@ if (isset($_GET["SortTodo"])) {
     .messerror {
         color: red;
     }
-
-    .messsuccess {
+    .messuccess {
         color: green;
     }
 </style>
-<p class="messerror"><?php echo $messerror; ?></p>
-<p class="messsuccess"><?php echo $messsuccess; ?></p>
+<?php
+display_from_session("messerror");
+display_from_session("messuccess");
+?>
 <h2>Add your todo</h2>
+
+<form action="index.php" method="get">
+    <input type="text" value="">
+    <button name="researchSubmit" type="submit">Search</button>
+</form>
+
 <form action="index.php" method="post">
     <label>
         <input type="text" name="inputValue">
