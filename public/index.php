@@ -1,21 +1,33 @@
 <?php
 session_start();
 
+$dsn = "sqlite:../data.db";
+
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+];
+
+$pdo = new PDO($dsn, null, null, $options);
+
+$query = $pdo->prepare("SELECT * FROM todo");
+$query->execute();
+$row = $query->fetchAll(PDO::FETCH_ASSOC);
+
+
+foreach ($row as $todo){
+   echo $todo['name'];
+   echo $todo['id'];
+}
+
+
 function swap($array, $index, $index2) {
     $temp = $array[$index];
     $array[$index] = $array[$index2];
     $array[$index2] = $temp;
     return $array;
 }
-/*
-$dsn = "sqlite:damnDB.sqlite";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-$pdo = new PDO($dsn, null, null,  $options);
-*/
 
 $notes = [];
 if (file_exists('output_json.json')) {
@@ -24,7 +36,6 @@ if (file_exists('output_json.json')) {
 
 if (isset($_POST["submitBtn"])) {
     $newNote = trim(htmlspecialchars($_POST["inputValue"]));
-
     if (mb_strlen($newNote) < 3 || mb_strlen($newNote) > 100) {
         $_SESSION["messerror"] = "Error: String length is smaller than 3 characters or greater than a 100 character";
     } else {
@@ -36,12 +47,16 @@ if (isset($_POST["submitBtn"])) {
     header("Location: index.php");
     die();
 }
+
+
 if (isset($_POST["toot"],$_POST["index"])) {
     $notes[$_POST["index"]] = $_POST["toot"];
     file_put_contents('output_json.json', json_encode($notes));
     header("Location: index.php");
     die();
 }
+
+
 // is button clicked?
 if (isset($_POST["deleteBtn"])) {
     $index = $_POST["deleteBtn"];
@@ -103,6 +118,10 @@ function display_from_session($variable): void {
     }
 }
 
+
+if (isset($_GET['search'])) {
+    $termsearch = htmlspecialchars($_GET['']);
+}
 ?>
 
 <!doctype html>
@@ -127,10 +146,12 @@ function display_from_session($variable): void {
 display_from_session("messerror");
 display_from_session("messuccess");
 ?>
+
+
 <h2>Add your todo</h2>
 
 <form action="index.php" method="get">
-    <input type="text" value="">
+    <input type="text" value="Search">
     <button name="researchSubmit" type="submit">Search</button>
 </form>
 
